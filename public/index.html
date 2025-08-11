@@ -1,89 +1,566 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Welcome to Firebase Hosting</title>
-
-    <!-- update the version number as needed -->
-    <script defer src="/__/firebase/12.1.0/firebase-app-compat.js"></script>
-    <!-- include only the Firebase features as you need -->
-    <script defer src="/__/firebase/12.1.0/firebase-auth-compat.js"></script>
-    <script defer src="/__/firebase/12.1.0/firebase-database-compat.js"></script>
-    <script defer src="/__/firebase/12.1.0/firebase-firestore-compat.js"></script>
-    <script defer src="/__/firebase/12.1.0/firebase-functions-compat.js"></script>
-    <script defer src="/__/firebase/12.1.0/firebase-messaging-compat.js"></script>
-    <script defer src="/__/firebase/12.1.0/firebase-storage-compat.js"></script>
-    <script defer src="/__/firebase/12.1.0/firebase-analytics-compat.js"></script>
-    <script defer src="/__/firebase/12.1.0/firebase-remote-config-compat.js"></script>
-    <script defer src="/__/firebase/12.1.0/firebase-performance-compat.js"></script>
-    <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
-    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
-
-    <style media="screen">
-      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-      #message { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
-      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
-      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
-      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
-      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
-      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
-      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
-      @media (max-width: 600px) {
-        body, #message { margin-top: 0; background: white; box-shadow: none; }
-        body { border-top: 16px solid #ffa100; }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="message">
-      <h2>Welcome</h2>
-      <h1>Firebase Hosting Setup Complete</h1>
-      <p>You're seeing this because you've successfully setup Firebase Hosting. Now it's time to go build something extraordinary!</p>
-      <a target="_blank" href="https://firebase.google.com/docs/hosting/">Open Hosting Documentation</a>
-    </div>
-    <p id="load">Firebase SDK Loading&hellip;</p>
-
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyMind - Personal Finance Tracker</title>
+    
+    <!-- Google Analytics (replace G-XXXXXXXXXX with your Measurement ID) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const loadEl = document.querySelector('#load');
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        // firebase.auth().onAuthStateChanged(user => { });
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-        // firebase.firestore().doc('/foo/bar').get().then(() => { });
-        // firebase.functions().httpsCallable('yourFunction')().then(() => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-        // firebase.analytics(); // call to activate
-        // firebase.analytics().logEvent('tutorial_completed');
-        // firebase.performance(); // call to activate
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-
-        try {
-          let app = firebase.app();
-          let features = [
-            'auth', 
-            'database', 
-            'firestore',
-            'functions',
-            'messaging', 
-            'storage', 
-            'analytics', 
-            'remoteConfig',
-            'performance',
-          ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
-        }
-      });
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);} // eslint-disable-line
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
     </script>
-  </body>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- FullCalendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-brain"></i>
+                    <span>MoneyMind</span>
+                </div>
+                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a href="#" data-section="dashboard" class="nav-link active">
+                            <i class="fas fa-home"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-section="accounts" class="nav-link">
+                            <i class="fas fa-wallet"></i>
+                            <span>Accounts</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-section="calendar" class="nav-link">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Calendar</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-section="goals" class="nav-link">
+                            <i class="fas fa-bullseye"></i>
+                            <span>Goals</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-section="reports" class="nav-link">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Reports</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-section="settings" class="nav-link">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <span id="userInitials">U</span>
+                </div>
+                <div class="user-info">
+                    <div class="user-name" id="userName">User Name</div>
+                    <div class="user-email" id="userEmail">user@email.com</div>
+                </div>
+                <button class="logout-btn" id="logoutBtn" aria-label="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="content-section active">
+                <div class="section-header">
+                    <h1>Dashboard</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" id="addTransactionBtn">
+                            <i class="fas fa-plus"></i>
+                            Add Transaction
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="dashboard-grid">
+                    <div class="stats-cards">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="totalBalance">$0.00</div>
+                                <div class="stat-label">Total Balance</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon income">
+                                <i class="fas fa-arrow-up"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="monthlyIncome">$0.00</div>
+                                <div class="stat-label">Monthly Income</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon expense">
+                                <i class="fas fa-arrow-down"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="monthlyExpenses">$0.00</div>
+                                <div class="stat-label">Monthly Expenses</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="savingsRate">0%</div>
+                                <div class="stat-label">Savings Rate</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="budget-overview">
+                        <h3>Budget Overview</h3>
+                        <div id="budgetCategories" class="budget-categories">
+                            <!-- Budget category cards will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <div class="recent-transactions">
+                        <h3>Recent Transactions</h3>
+                        <div id="recentTransactionsList" class="transactions-list">
+                            <!-- Recent transactions will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Accounts Section -->
+            <section id="accounts-section" class="content-section">
+                <div class="section-header">
+                    <h1>Accounts</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" id="addAccountBtn">
+                            <i class="fas fa-plus"></i>
+                            Add Account
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="accounts-grid" id="accountsGrid">
+                    <!-- Account cards will be populated by JavaScript -->
+                </div>
+                
+                <div class="transactions-section">
+                    <div class="transactions-header">
+                        <h3>All Transactions</h3>
+                        <div class="transaction-filters">
+                            <div class="filter-group">
+                                <label for="dateFromFilter">From:</label>
+                                <input type="date" id="dateFromFilter" class="filter-input">
+                            </div>
+                            <div class="filter-group">
+                                <label for="dateToFilter">To:</label>
+                                <input type="date" id="dateToFilter" class="filter-input">
+                            </div>
+                            <div class="filter-group">
+                                <label for="typeFilter">Type:</label>
+                                <select id="typeFilter" class="filter-input">
+                                    <option value="">All Types</option>
+                                    <option value="income">Income</option>
+                                    <option value="expense">Expense</option>
+                                    <option value="transfer">Transfer</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="categoryFilter">Category:</label>
+                                <select id="categoryFilter" class="filter-input">
+                                    <option value="">All Categories</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="accountFilter">Account:</label>
+                                <select id="accountFilter" class="filter-input">
+                                    <option value="">All Accounts</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-secondary" id="clearFiltersBtn">Clear Filters</button>
+                        </div>
+                    </div>
+                    
+                    <div id="transactionsList" class="transactions-list">
+                        <!-- Transactions will be populated by JavaScript -->
+                    </div>
+                    
+                    <div class="load-more-container">
+                        <button class="btn btn-outline" id="loadMoreTransactions" style="display: none;">
+                            Load More
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Calendar Section -->
+            <section id="calendar-section" class="content-section">
+                <div class="section-header">
+                    <h1>Calendar</h1>
+                </div>
+                
+                <div class="calendar-container">
+                    <div id="calendar"></div>
+                </div>
+            </section>
+
+            <!-- Goals Section -->
+            <section id="goals-section" class="content-section">
+                <div class="section-header">
+                    <h1>Financial Goals</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" id="addGoalBtn">
+                            <i class="fas fa-plus"></i>
+                            Add Goal
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="goals-grid" id="goalsGrid">
+                    <!-- Goal cards will be populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Reports Section -->
+            <section id="reports-section" class="content-section">
+                <div class="section-header">
+                    <h1>Reports & Analytics</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" id="exportDataBtn">
+                            <i class="fas fa-download"></i>
+                            Export Data
+                        </button>
+                        <button class="btn btn-secondary" id="generateAISummaryBtn">
+                            <i class="fas fa-robot"></i>
+                            AI Summary
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="reports-grid">
+                    <div class="chart-container">
+                        <h3>Monthly Expenses by Category</h3>
+                        <canvas id="expensePieChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3>Income vs Expenses (Last 6 Months)</h3>
+                        <canvas id="incomeExpenseChart"></canvas>
+                    </div>
+                    
+                    <div class="ai-summary-container">
+                        <h3>AI Financial Summary</h3>
+                        <div id="aiSummaryContent" class="summary-content">
+                            Click "AI Summary" to generate insights about your financial data.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings-section" class="content-section">
+                <div class="section-header">
+                    <h1>Settings</h1>
+                </div>
+                
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h3>Appearance</h3>
+                        <div class="setting-item">
+                            <label for="themeToggle">Theme</label>
+                            <div class="theme-switch">
+                                <input type="checkbox" id="themeToggle">
+                                <label for="themeToggle" class="switch-label">
+                                    <span class="switch-text">Light</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-card">
+                        <h3>Preferences</h3>
+                        <div class="setting-item">
+                            <label for="defaultCurrency">Default Currency</label>
+                            <select id="defaultCurrency" class="setting-input">
+                                <option value="USD">USD ($)</option>
+                                <option value="EUR">EUR (€)</option>
+                                <option value="GBP">GBP (£)</option>
+                                <option value="JPY">JPY (¥)</option>
+                                <option value="CAD">CAD (C$)</option>
+                                <option value="AUD">AUD (A$)</option>
+                                <option value="INR">INR (₹)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <label for="defaultAccount">Default Account</label>
+                            <select id="defaultAccount" class="setting-input">
+                                <option value="">Select Account</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-card">
+                        <h3>Categories</h3>
+                        <div class="categories-management">
+                            <button class="btn btn-primary" id="manageCategoriesBtn">
+                                <i class="fas fa-tags"></i>
+                                Manage Categories
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-card danger-zone">
+                        <h3>Danger Zone</h3>
+                        <p>These actions cannot be undone. Please be careful.</p>
+                        <button class="btn btn-danger" id="resetDataBtn">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Reset All Data
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Login/Register Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="authModalTitle">Welcome to MoneyMind</h2>
+                <button class="modal-close" aria-label="Close modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login">Login</button>
+                <button class="auth-tab" data-tab="register">Register</button>
+            </div>
+            
+            <div id="loginForm" class="auth-form active">
+                <form>
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-full" id="loginBtn">
+                        Login
+                    </button>
+                </form>
+                
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+                
+                <button class="btn btn-google btn-full" id="googleLoginBtn">
+                    <i class="fab fa-google"></i>
+                    Sign in with Google
+                </button>
+            </div>
+            
+            <div id="registerForm" class="auth-form">
+                <form>
+                    <div class="form-group">
+                        <label for="registerName">Full Name</label>
+                        <input type="text" id="registerName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="registerEmail">Email</label>
+                        <input type="email" id="registerEmail" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="registerPassword">Password</label>
+                        <input type="password" id="registerPassword" required>
+                        <small class="password-hint">Min 8 characters, 1 uppercase, 1 number</small>
+                    </div>
+                    
+                    <div class="form-group checkbox-group">
+                        <label>
+                            <input type="checkbox" id="studentCheckbox">
+                            <span class="checkmark"></span>
+                            I'm a student (adds student-specific categories)
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-full" id="registerBtn">
+                        Create Account
+                    </button>
+                </form>
+                
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+                
+                <button class="btn btn-google btn-full" id="googleRegisterBtn">
+                    <i class="fab fa-google"></i>
+                    Sign up with Google
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Modal -->
+    <div id="formModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="formModalTitle">Form</h2>
+                <button class="modal-close" aria-label="Close modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <form id="dynamicForm">
+                    <!-- Form content will be populated by JavaScript -->
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="confirmModalTitle">Confirm Action</h2>
+                <button class="modal-close" aria-label="Close modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <p id="confirmModalMessage">Are you sure you want to proceed?</p>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="confirmCancelBtn">Cancel</button>
+                <button class="btn btn-danger" id="confirmActionBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div id="exportModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Export Data</h2>
+                <button class="modal-close" aria-label="Close modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="export-options">
+                    <div class="export-option">
+                        <button class="btn btn-primary" id="exportCSVBtn">
+                            <i class="fas fa-file-csv"></i>
+                            Export as CSV
+                        </button>
+                        <p>Download your data in CSV format for spreadsheet applications</p>
+                    </div>
+                    
+                    <div class="export-option">
+                        <button class="btn btn-primary" id="exportPDFBtn">
+                            <i class="fas fa-file-pdf"></i>
+                            Export as PDF
+                        </button>
+                        <p>Generate a formatted PDF report of your financial data</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js';
+        import { getStorage } from 'https://www.gstatic.com/firebasejs/10.1.0/firebase-storage.js';
+        import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.1.0/firebase-analytics.js';
+        
+        window.firebaseApp = initializeApp({
+            apiKey: "AIzaSyCrIijDSvxzG7oB-1uy3L28BybLxKr3j_U",
+            authDomain: "moneymind-a72f3.firebaseapp.com",
+            projectId: "moneymind-a72f3",
+            storageBucket: "moneymind-a72f3.firebasestorage.app",
+            messagingSenderId: "293613059500",
+            appId: "1:293613059500:web:694bd9fbe3dc0c70a38e09",
+            measurementId: "G-3S920WBCHC"
+        });
+        
+        window.auth = getAuth(window.firebaseApp);
+        window.db = getFirestore(window.firebaseApp);
+        window.storage = getStorage(window.firebaseApp);
+        window.analytics = getAnalytics(window.firebaseApp);
+    </script>
+
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.js"></script>
+
+    <!-- Main Script -->
+    <script type="module" src="script.js" defer></script>
+</body>
 </html>

@@ -165,7 +165,11 @@ import {
                     document.body.classList.add('logged-in');
                     App.UI.closeModal('authModal');
                 } else {
-                    App.Auth.logout();
+                    // Show login modal and remove logged-in class
+                    App.State.user = null;
+                    App.State.userData = null;
+                    document.body.classList.remove('logged-in');
+                    App.UI.showModal('authModal');
                 }
             }
         },
