@@ -104,6 +104,7 @@ import {
                     App.UI.showLoading();
                     const userCredential = await createUserWithEmailAndPassword(window.auth, email, password);
                     await App.DB.createUserData(userCredential.user, name, isStudent);
+                    App.Analytics.track('sign_up', { method: 'password' });
                     App.UI.closeModal('authModal');
                 } catch (error) {
                     App.UI.showToast('Registration Failed', App.Logic.formatFirebaseError(error.message), 'error');
@@ -116,6 +117,7 @@ import {
                 try {
                     App.UI.showLoading();
                     await signInWithEmailAndPassword(window.auth, email, password);
+                    App.Analytics.track('login', { method: 'password' });
                     App.UI.closeModal('authModal');
                 } catch (error) {
                     App.UI.showToast('Login Failed', App.Logic.formatFirebaseError(error.message), 'error');
@@ -130,9 +132,12 @@ import {
                     const provider = new GoogleAuthProvider();
                     const result = await signInWithPopup(window.auth, provider);
                     const user = result.user;
-                    const userDoc = await getDoc(doc(window.db, "users", user.uid));
+                    const userDoc = await getDoc(doc(window.db, 'users', user.uid));
                     if (!userDoc.exists()) {
                         await App.DB.createUserData(user, user.displayName, false);
+                        App.Analytics.track('sign_up', { method: 'google' });
+                    } else {
+                        App.Analytics.track('login', { method: 'google' });
                     }
                     App.UI.closeModal('authModal');
                 } catch (error) {
@@ -144,6 +149,7 @@ import {
 
             async logout() {
                 await signOut(window.auth);
+                App.Analytics.track('logout');
                 if (App.State.unsubscribe) App.State.unsubscribe();
                 App.State.user = null;
                 App.State.userData = null;
@@ -304,18 +310,13 @@ import {
 
             async processCRUD(type, action, data) {
                 App.UI.showLoading();
-                const {
-                    userData
-                } = App.State;
-                let updatedData = { ...userData
-                };
-
+                const { userData } = App.State;
+                let updatedData = { ...userData };
+                let analyticsEvent = '';
                 switch (type) {
                     case 'transaction':
                         if (action === 'add') {
-                            const newTransaction = { ...data,
-                                id: App.Logic.generateId()
-                            };
+                            const newTransaction = { ...data, id: App.Logic.generateId() };
                             updatedData.transactions.push(newTransaction);
                             updatedData.accounts = App.Logic.updateAccountBalance(updatedData.accounts, newTransaction);
                         } else if (action === 'update') {
@@ -328,13 +329,12 @@ import {
                             updatedData.transactions = userData.transactions.filter(t => t.id !== data.id);
                             updatedData.accounts = App.Logic.updateAccountBalance(updatedData.accounts, transactionToDelete, true);
                         }
+                        analyticsEvent = `transaction_${action}`;
                         break;
 
                     case 'account':
                         if (action === 'add') {
-                            updatedData.accounts.push({ ...data,
-                                id: App.Logic.generateId()
-                            });
+                            updatedData.accounts.push({ ...data, id: App.Logic.generateId() });
                         } else if (action === 'update') {
                             updatedData.accounts = userData.accounts.map(a => a.id === data.id ? data : a);
                         } else if (action === 'delete') {
@@ -345,13 +345,12 @@ import {
                             }
                             updatedData.accounts = userData.accounts.filter(a => a.id !== data.id);
                         }
+                        analyticsEvent = `account_${action}`;
                         break;
 
                     case 'category':
                         if (action === 'add') {
-                            updatedData.categories.push({ ...data,
-                                id: App.Logic.generateId()
-                            });
+                            updatedData.categories.push({ ...data, id: App.Logic.generateId() });
                         } else if (action === 'update') {
                             updatedData.categories = userData.categories.map(c => c.id === data.id ? data : c);
                         } else if (action === 'delete') {
@@ -362,25 +361,23 @@ import {
                             }
                             updatedData.categories = userData.categories.filter(c => c.id !== data.id);
                         }
+                        analyticsEvent = `category_${action}`;
                         break;
 
                     case 'goal':
                         if (action === 'add') {
-                            updatedData.goals.push({ ...data,
-                                id: App.Logic.generateId(),
-                                currentAmount: 0
-                            });
+                            updatedData.goals.push({ ...data, id: App.Logic.generateId(), currentAmount: 0 });
                         } else if (action === 'update') {
-                            updatedData.goals = userData.goals.map(g => g.id === data.id ? { ...g,
-                                ...data
-                            } : g);
+                            updatedData.goals = userData.goals.map(g => g.id === data.id ? { ...g, ...data } : g);
                         } else if (action === 'delete') {
                             updatedData.goals = userData.goals.filter(g => g.id !== data.id);
                         }
+                        analyticsEvent = `goal_${action}`;
                         break;
                 }
 
                 await App.DB.updateUserData(updatedData);
+                if (analyticsEvent) App.Analytics.track(analyticsEvent);
                 App.UI.closeModal('formModal');
                 App.UI.hideLoading();
             },
@@ -390,21 +387,15 @@ import {
                 return accounts.map(acc => {
                     if (transaction.type === 'transfer') {
                         if (acc.id === transaction.accountId) {
-                            return { ...acc,
-                                balance: acc.balance - transaction.amount * multiplier
-                            };
+                            return { ...acc, balance: acc.balance - transaction.amount * multiplier };
                         }
                         if (acc.id === transaction.toAccountId) {
-                            return { ...acc,
-                                balance: acc.balance + transaction.amount * multiplier
-                            };
+                            return { ...acc, balance: acc.balance + transaction.amount * multiplier };
                         }
                     } else {
                         if (acc.id === transaction.accountId) {
                             const amount = transaction.type === 'income' ? transaction.amount : -transaction.amount;
-                            return { ...acc,
-                                balance: acc.balance + amount * multiplier
-                            };
+                            return { ...acc, balance: acc.balance + amount * multiplier };
                         }
                     }
                     return acc;
@@ -412,9 +403,7 @@ import {
             },
 
             processRecurringTransactions() {
-                const {
-                    recurringTransactions = [], transactions
-                } = App.State.userData;
+                const { recurringTransactions = [], transactions } = App.State.userData;
                 let newTransactions = [];
                 const now = new Date();
 
@@ -467,9 +456,7 @@ import {
             },
 
             getFilteredTransactions() {
-                const {
-                    transactions
-                } = App.State.userData;
+                const { transactions } = App.State.userData;
                 const dateFrom = document.getElementById('dateFromFilter').value;
                 const dateTo = document.getElementById('dateToFilter').value;
                 const type = document.getElementById('typeFilter').value;
@@ -524,6 +511,7 @@ import {
                 }
                 summary += `Keep up the great work tracking your finances!`;
 
+                App.Analytics.track('ai_summary');
                 return summary;
             },
 
@@ -557,6 +545,8 @@ import {
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
+
+                App.Analytics.track('export_csv', { count: transactions.length });
             },
 
             exportToPDF() {
@@ -598,6 +588,8 @@ import {
                 });
 
                 doc.save('moneymind_transactions.pdf');
+
+                App.Analytics.track('export_pdf', { count: transactions.length });
             }
         },
 
@@ -820,9 +812,7 @@ import {
                 for (let i = 5; i >= 0; i--) {
                     const d = new Date();
                     d.setMonth(d.getMonth() - i);
-                    labels.push(d.toLocaleString('default', {
-                        month: 'short'
-                    }));
+                    labels.push(d.toLocaleString('default', { month: 'short' }));
 
                     const monthTransactions = App.State.userData.transactions.filter(t => {
                         const tDate = new Date(t.date);
@@ -1320,9 +1310,8 @@ import {
             document.getElementById('themeToggle').addEventListener('change', e => {
                 const theme = e.target.checked ? 'light' : 'dark';
                 document.documentElement.dataset.theme = theme;
-                App.DB.updateUserData({
-                    'settings.theme': theme
-                });
+                App.DB.updateUserData({ 'settings.theme': theme });
+                App.Analytics.track('theme_change', { theme });
             });
             document.getElementById('defaultCurrency').addEventListener('change', e => {
                 App.DB.updateUserData({
