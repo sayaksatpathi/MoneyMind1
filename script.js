@@ -1370,29 +1370,54 @@ import {
             });
 
             // Reports
-            document.getElementById('exportDataBtn').addEventListener('click', () => App.UI.showModal('exportModal'));
-            document.getElementById('exportCSVBtn').addEventListener('click', App.Logic.exportToCSV);
-            document.getElementById('exportPDFBtn').addEventListener('click', App.Logic.exportToPDF);
-            document.getElementById('generateAISummaryBtn').addEventListener('click', () => {
-                const summary = App.Logic.generateAISummary();
-                document.getElementById('aiSummaryContent').textContent = summary;
-            });
+            const exportDataBtn = document.getElementById('exportDataBtn');
+            const exportCSVBtn = document.getElementById('exportCSVBtn');
+            const exportPDFBtn = document.getElementById('exportPDFBtn');
+            const generateAISummaryBtn = document.getElementById('generateAISummaryBtn');
+            
+            if (exportDataBtn) exportDataBtn.addEventListener('click', () => App.UI.showModal('exportModal'));
+            if (exportCSVBtn) exportCSVBtn.addEventListener('click', App.Logic.exportToCSV);
+            if (exportPDFBtn) exportPDFBtn.addEventListener('click', App.Logic.exportToPDF);
+            if (generateAISummaryBtn) {
+                generateAISummaryBtn.addEventListener('click', () => {
+                    const summary = App.Logic.generateAISummary();
+                    const summaryContent = document.getElementById('aiSummaryContent');
+                    if (summaryContent) summaryContent.textContent = summary;
+                });
+            }
 
             // Transaction Filters
-            document.querySelector('.transaction-filters').addEventListener('change', App.UI.renderTransactions);
-            document.getElementById('clearFiltersBtn').addEventListener('click', () => {
-                document.getElementById('dateFromFilter').value = '';
-                document.getElementById('dateToFilter').value = '';
-                document.getElementById('typeFilter').value = '';
-                document.getElementById('categoryFilter').value = '';
-                document.getElementById('accountFilter').value = '';
-                App.UI.renderTransactions();
-            });
+            const transactionFilters = document.querySelector('.transaction-filters');
+            const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+            
+            if (transactionFilters) {
+                transactionFilters.addEventListener('change', App.UI.renderTransactions);
+            }
+            
+            if (clearFiltersBtn) {
+                clearFiltersBtn.addEventListener('click', () => {
+                    const dateFromFilter = document.getElementById('dateFromFilter');
+                    const dateToFilter = document.getElementById('dateToFilter');
+                    const typeFilter = document.getElementById('typeFilter');
+                    const categoryFilter = document.getElementById('categoryFilter');
+                    const accountFilter = document.getElementById('accountFilter');
+                    
+                    if (dateFromFilter) dateFromFilter.value = '';
+                    if (dateToFilter) dateToFilter.value = '';
+                    if (typeFilter) typeFilter.value = '';
+                    if (categoryFilter) categoryFilter.value = '';
+                    if (accountFilter) accountFilter.value = '';
+                    App.UI.renderTransactions();
+                });
+            }
 
-            // Initial check for theme from localStorage
+            // Initial theme setup
             const savedTheme = localStorage.getItem('theme') || 'dark';
             document.documentElement.dataset.theme = savedTheme;
-            document.getElementById('themeToggle').checked = savedTheme === 'light';
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.checked = savedTheme === 'light';
+            }
         }
     };
 
