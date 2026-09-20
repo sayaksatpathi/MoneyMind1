@@ -330,7 +330,16 @@ import {
             async processCRUD(type, action, data) {
                 App.UI.showLoading();
                 const { userData } = App.State;
-                let updatedData = { ...userData };
+                // Work on copies so a failed Firestore update cannot mutate the UI's
+                // current snapshot in place.
+                let updatedData = {
+                    ...userData,
+                    accounts: [...userData.accounts],
+                    transactions: [...userData.transactions],
+                    categories: [...userData.categories],
+                    goals: [...userData.goals],
+                    recurringTransactions: [...(userData.recurringTransactions || [])],
+                };
                 let analyticsEvent = '';
                 switch (type) {
                     case 'transaction':
@@ -357,7 +366,7 @@ import {
                         } else if (action === 'update') {
                             updatedData.accounts = userData.accounts.map(a => a.id === data.id ? data : a);
                         } else if (action === 'delete') {
-                            if (userData.transactions.some(t => t.accountId === data.id)) {
+                            if (userData.transactions.some(t => t.accountId === data.id || t.toAccountId === data.id)) {
                                 App.UI.showToast('Error', 'Cannot delete account with transactions.', 'error');
                                 App.UI.hideLoading();
                                 return;
@@ -429,6 +438,13 @@ import {
                 recurringTransactions.forEach(rt => {
                     let nextDueDate = new Date(rt.startDate);
                     const endDate = rt.endDate ? new Date(rt.endDate) : null;
+
+                    // Bad imported data must not turn this catch-up loop into an
+                    // infinite loop. Only supported schedules can advance a date.
+                    if (Number.isNaN(nextDueDate.getTime()) || !['daily', 'weekly', 'monthly'].includes(rt.frequency)) {
+                        console.warn('Skipping invalid recurring transaction:', rt.id);
+                        return;
+                    }
 
                     while (nextDueDate <= now) {
                         if (endDate && nextDueDate > endDate) break;
@@ -542,6 +558,12 @@ import {
                 }
 
                 const headers = ['Date', 'Description', 'Type', 'Amount', 'Category', 'Account', 'Tags'];
+                const escapeCSV = (value) => {
+                    let text = String(value ?? '');
+                    // Prevent formula execution when the export is opened in a spreadsheet.
+                    if (/^[=+\-@]/.test(text)) text = `'${text}`;
+                    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+                };
                 const rows = transactions.map(t => {
                     const category = App.State.userData.categories.find(c => c.id === t.categoryId)?.name || '';
                     const account = App.State.userData.accounts.find(a => a.id === t.accountId)?.name || '';
@@ -553,17 +575,18 @@ import {
                         category,
                         account,
                         t.tags ? t.tags.join(', ') : ''
-                    ].join(',');
+                    ].map(escapeCSV).join(',');
                 });
 
-                const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows].join('\n');
-                const encodedUri = encodeURI(csvContent);
+                const csvContent = [headers.map(escapeCSV).join(','), ...rows].join('\n');
+                const csvUrl = URL.createObjectURL(new Blob([csvContent], { type: 'text/csv;charset=utf-8' }));
                 const link = document.createElement("a");
-                link.setAttribute("href", encodedUri);
+                link.setAttribute("href", csvUrl);
                 link.setAttribute("download", "moneymind_transactions.csv");
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
+                URL.revokeObjectURL(csvUrl);
 
                 App.Analytics.track('export_csv', { count: transactions.length });
             },
@@ -614,6 +637,12 @@ import {
 
         // --- UI & DOM MANIPULATION ---
         UI: {
+            escapeHTML(value) {
+                return String(value ?? '').replace(/[&<>"']/g, char => ({
+                    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+                })[char]);
+            },
+
             renderAll() {
                 if (!App.State.userData) return;
                 App.UI.renderUserProfile();
@@ -660,7 +689,7 @@ import {
                         <div class="category-info">
                             <div class="category-icon" style="background-color: ${App.UI.getCategoryColor(cat.id)}"><i class="fas ${cat.icon}"></i></div>
                             <div class="category-details">
-                                <h4>${cat.name}</h4>
+                                <h4>${App.UI.escapeHTML(cat.name)}</h4>
                                 <div class="category-progress">
                                     <div class="progress-bar">
                                         <div class="progress-fill ${progress > 100 ? 'over-budget' : ''}" style="width: ${Math.min(progress, 100)}%;"></div>
@@ -696,8 +725,8 @@ import {
                             <div class="account-info">
                                 <div class="account-icon"><i class="fas ${acc.icon}"></i></div>
                                 <div>
-                                    <div class="account-name">${acc.name}</div>
-                                    <div class="account-type">${acc.type}</div>
+                                    <div class="account-name">${App.UI.escapeHTML(acc.name)}</div>
+                                    <div class="account-type">${App.UI.escapeHTML(acc.type)}</div>
                                 </div>
                             </div>
                         </div>
@@ -730,12 +759,12 @@ import {
                         <i class="fas ${category ? category.icon : 'fa-question-circle'}"></i>
                     </div>
                     <div class="transaction-details">
-                        <div class="transaction-description">${t.description}</div>
+                        <div class="transaction-description">${App.UI.escapeHTML(t.description)}</div>
                         <div class="transaction-meta">
                             <span class="transaction-date">${new Date(t.date).toLocaleDateString()}</span>
-                            ${category ? `<span class="transaction-category">${category.name}</span>` : ''}
-                            ${account ? `<span class="transaction-account">${account.name}</span>` : ''}
-                            ${t.tags && t.tags.length > 0 ? `<div class="transaction-tags">${t.tags.map(tag => `<span class="transaction-tag">${tag}</span>`).join('')}</div>` : ''}
+                            ${category ? `<span class="transaction-category">${App.UI.escapeHTML(category.name)}</span>` : ''}
+                            ${account ? `<span class="transaction-account">${App.UI.escapeHTML(account.name)}</span>` : ''}
+                            ${t.tags && t.tags.length > 0 ? `<div class="transaction-tags">${t.tags.map(tag => `<span class="transaction-tag">${App.UI.escapeHTML(tag)}</span>`).join('')}</div>` : ''}
                             ${t.receipt ? `<i class="fas fa-paperclip" title="Receipt attached"></i>` : ''}
                         </div>
                     </div>
@@ -762,7 +791,7 @@ import {
                             <div class="goal-info">
                                 <div class="goal-icon"><i class="fas ${goal.icon}"></i></div>
                                 <div>
-                                    <div class="goal-name">${goal.name}</div>
+                                    <div class="goal-name">${App.UI.escapeHTML(goal.name)}</div>
                                     <div class="goal-target">Target: ${App.Logic.formatCurrency(goal.targetAmount)}</div>
                                 </div>
                             </div>
@@ -1046,21 +1075,24 @@ import {
                     accounts,
                     categories
                 } = App.State.userData;
-                const accountOptions = accounts.map(a => `<option value="${a.id}" ${data.accountId === a.id ? 'selected' : ''}>${a.name}</option>`).join('');
-                const categoryOptions = categories.map(c => `<option value="${c.id}" ${data.categoryId === c.id ? 'selected' : ''}>${c.name}</option>`).join('');
+                const selectedAccount = data.accountId || App.State.userData.settings?.defaultAccount;
+                const accountOptions = accounts.map(a => `<option value="${App.UI.escapeHTML(a.id)}" ${selectedAccount === a.id ? 'selected' : ''}>${App.UI.escapeHTML(a.name)}</option>`).join('');
+                const toAccountOptions = accounts.map(a => `<option value="${App.UI.escapeHTML(a.id)}" ${data.toAccountId === a.id ? 'selected' : ''}>${App.UI.escapeHTML(a.name)}</option>`).join('');
+                const categoryOptions = categories.map(c => `<option value="${App.UI.escapeHTML(c.id)}" ${data.categoryId === c.id ? 'selected' : ''}>${App.UI.escapeHTML(c.name)}</option>`).join('');
+                const type = data.type || 'expense';
 
                 return `
                     <div class="form-group">
                         <label for="type">Type</label>
                         <select id="type" required>
-                            <option value="expense" ${data.type === 'expense' ? 'selected' : ''}>Expense</option>
-                            <option value="income" ${data.type === 'income' ? 'selected' : ''}>Income</option>
-                            <option value="transfer" ${data.type === 'transfer' ? 'selected' : ''}>Transfer</option>
+                            <option value="expense" ${type === 'expense' ? 'selected' : ''}>Expense</option>
+                            <option value="income" ${type === 'income' ? 'selected' : ''}>Income</option>
+                            <option value="transfer" ${type === 'transfer' ? 'selected' : ''}>Transfer</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="description">Description</label>
-                        <input type="text" id="description" value="${data.description || ''}" required>
+                        <input type="text" id="description" value="${App.UI.escapeHTML(data.description)}" required>
                     </div>
                     <div class="form-group">
                         <label for="amount">Amount</label>
@@ -1071,20 +1103,20 @@ import {
                         <input type="date" id="date" value="${data.date || new Date().toISOString().split('T')[0]}" required>
                     </div>
                     <div class="form-group" id="fromAccountGroup">
-                        <label for="accountId">From Account</label>
+                        <label for="accountId">${type === 'transfer' ? 'From Account' : 'Account'}</label>
                         <select id="accountId" required>${accountOptions}</select>
                     </div>
-                    <div class="form-group" id="toAccountGroup" style="display: ${data.type === 'transfer' ? 'block' : 'none'}">
+                    <div class="form-group" id="toAccountGroup" style="display: ${type === 'transfer' ? 'block' : 'none'}">
                         <label for="toAccountId">To Account</label>
-                        <select id="toAccountId">${accountOptions}</select>
+                        <select id="toAccountId">${toAccountOptions}</select>
                     </div>
-                    <div class="form-group" id="categoryGroup" style="display: ${data.type !== 'income' ? 'block' : 'none'}">
+                    <div class="form-group" id="categoryGroup" style="display: ${type !== 'income' ? 'block' : 'none'}">
                         <label for="categoryId">Category</label>
                         <select id="categoryId">${categoryOptions}</select>
                     </div>
                     <div class="form-group">
                         <label for="tags">Tags (comma-separated)</label>
-                        <input type="text" id="tags" value="${data.tags ? data.tags.join(', ') : ''}">
+                        <input type="text" id="tags" value="${App.UI.escapeHTML(data.tags ? data.tags.join(', ') : '')}">
                     </div>
                     <div class="form-group">
                         <label for="receipt">Receipt</label>
@@ -1201,8 +1233,16 @@ import {
                         data.amount = parseFloat(form.querySelector('#amount').value);
                         data.date = form.querySelector('#date').value;
                         data.accountId = form.querySelector('#accountId').value;
+                        if (!Number.isFinite(data.amount) || data.amount <= 0) {
+                            App.UI.showToast('Invalid amount', 'Enter an amount greater than zero.', 'error');
+                            return;
+                        }
                         if (data.type === 'transfer') {
                             data.toAccountId = form.querySelector('#toAccountId').value;
+                            if (data.accountId === data.toAccountId) {
+                                App.UI.showToast('Invalid transfer', 'Choose two different accounts for a transfer.', 'error');
+                                return;
+                            }
                         }
                         if (data.type !== 'income') {
                             data.categoryId = form.querySelector('#categoryId').value;
@@ -1312,8 +1352,20 @@ import {
 
             // Modals
             document.querySelectorAll('.modal-close, .modal[id="confirmModal"] #confirmCancelBtn').forEach(el => {
-                el.addEventListener('click', () => App.UI.closeModal(el.closest('.modal').id));
+                el.addEventListener('click', () => {
+                    const modalId = el.closest('.modal').id;
+                    // The authentication dialog is the access gate. Closing it while
+                    // signed out exposed controls that require userData.
+                    if (modalId === 'authModal' && !App.State.user) return;
+                    App.UI.closeModal(modalId);
+                });
             });
+
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            if (sidebarToggle && sidebar) {
+                sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('active'));
+            }
 
             // Navigation
             document.querySelector('.sidebar-nav').addEventListener('click', e => {
